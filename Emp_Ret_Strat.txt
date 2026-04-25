@@ -1,0 +1,275 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load dataset
+df = pd.read_csv('../../Data/Raw/WA_Fn-UseC_-HR-Employee-Attrition.csv')
+
+# Preview
+df.head()
+
+df.shape
+df.info()
+df.describe()
+
+df.isnull().sum()
+
+df.duplicated().sum()
+
+df.nunique().sort_values()
+
+df.drop(['EmployeeCount', 'StandardHours', 'Over18'], axis=1, inplace=True)
+
+df['Attrition'] = df['Attrition'].map({'Yes': 1, 'No': 0})
+
+df.head()
+df.info()
+
+df.to_csv('../../Data/Processed/cleaned_hr_data.csv', index=False)
+
+df['Attrition'].value_counts(normalize=True)
+
+import os
+os.listdir('../../Data/Processed')
+
+#How many employees have left the company?
+
+df['Attrition'].value_counts()
+
+#Q2 What percentage of employees leave the company?
+
+attrition_rate = df['Attrition'].value_counts(normalize=True)*100
+attrition_rate
+
+### Conclusion
+
+The analysis shows that approximately **16% of employees leave the company**, while about **84% of employees stay in the organization**.
+
+This indicates that although the majority of employees remain with the company, a noticeable percentage of employees leave the organization.
+
+# Q3 Which department has the highest attrition?
+
+dept_attrition_percent = pd.crosstab(df['Department'], df['Attrition'], normalize='index') * 100
+dept_attrition_percent = dept_attrition_percent.round(2)
+dept_attrition_percent
+
+### Conclusion
+
+The analysis shows that the **Sales department has the highest attrition rate at approximately 20.6%**, followed by the Human Resources department at around 19%.
+
+The Research & Development department has the lowest attrition rate at approximately 13.8%.
+
+This suggests that employee retention strategies may need more focus in the Sales department.
+
+# Q4 Does salary affect attrition?
+
+salary_attrition = df.groupby('Attrition')['MonthlyIncome'].mean().round(2)
+salary_attrition
+
+### Conclusion
+
+The analysis shows that employees who leave the company tend to have **lower average monthly income** compared to employees who stay.
+
+This suggests that salary may be an important factor influencing employee attrition, as employees with lower salaries may be more likely to seek better opportunities elsewhere.
+
+# Q5 Does overtime increase attrition?
+
+overtime_attrition = pd.crosstab(df['OverTime'],df['Attrition'])
+overtime_attrition
+
+### Conclusion
+
+The analysis shows that employees who work overtime have a significantly higher attrition rate compared to those who do not work overtime.
+
+Approximately 30% of employees who work overtime leave the company, while only about 10% of employees who do not work overtime leave.
+
+This suggests that excessive workload or overtime may contribute to employee dissatisfaction and higher attrition.
+
+# Q6 Do job satisfaction and work-life balance affect retention?
+
+satisfaction_analysis = df.groupby('Attrition')[['JobSatisfaction','WorkLifeBalance']].mean().round(2)
+satisfaction_analysis
+
+### Conclusion
+
+The analysis shows that employees who leave the company tend to have **lower job satisfaction and slightly poorer work-life balance** compared to employees who stay.
+
+This suggests that improving job satisfaction and maintaining a healthy work-life balance may help reduce employee attrition and improve retention.
+
+# Q7 Which age group leaves the most?
+
+bins = [18,25,35,45,55,60]
+labels = ['18-25','26-35','36-45','46-55','56+']
+df['AgeGroup'] = pd.cut(df['Age'], bins=bins, labels=labels)
+
+age_attrition = pd.crosstab(df['AgeGroup'], df['Attrition'])
+age_attrition
+
+### Conclusion
+
+The analysis shows that the **26–35 age group has the highest number of employees leaving the company**, with 116 employees leaving the organization.
+
+This suggests that employees in this age group are more likely to explore better career opportunities, higher salaries, or professional growth.
+
+Therefore, organizations may need to focus more on retention strategies for employees in the 26–35 age group.
+
+# Q8 Does distance from home influence attrition?
+
+distance_attrition = df.groupby('Attrition')['DistanceFromHome'].mean().round(2)
+distance_attrition
+
+### Conclusion
+
+The analysis shows that employees who leave the company have a higher average distance from home (10.63) compared to employees who stay in the company (8.92).
+
+This suggests that longer commuting distance may influence employee attrition, as employees who live farther from the workplace may experience more travel-related challenges.
+
+# Q9 Can we predict which employess may leave?
+
+attrition_factors = df.groupby('Attrition')[['MonthlyIncome','JobSatisfaction','WorkLifeBalance','DistanceFromHome','Age']].mean().round(2)
+attrition_factors
+
+### Conclusion
+
+Based on the analysis, several factors appear to influence employee attrition in the organization.
+
+The key factors associated with higher attrition include:
+
+- Employees working overtime
+- Lower monthly income
+- Lower job satisfaction
+- Poor work-life balance
+- Longer distance from home
+- Employees in the 26–35 age group
+
+These factors indicate that employee attrition is influenced by both work-related conditions and personal factors.
+
+Using these variables, organizations can build predictive models such as Logistic Regression, Decision Trees, or Random Forest to identify employees who may be at risk of leaving the company.
+
+### Visualisation
+
+# Q1 What percentage of employees leave the company?
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Attrition percentage calculate
+attrition_rate = df['Attrition'].value_counts(normalize=True) * 100
+
+# Rename labels for clarity
+attrition_rate.index = ['Stayed', 'Left']
+
+# Colors for bars
+colors = ['#6FBF8F', '#2F4F7F']  # Green for Stayed, Blue for Left
+
+# Plot
+ax = attrition_rate.plot(kind='bar', color=colors, figsize=(6,4))
+
+
+
+plt.title("Employee Attrition Percentage")
+plt.xlabel("Employee Status")
+plt.ylabel("Percentage")
+plt.xticks(rotation=0)
+plt.show()
+
+Approximately 16% of employees have left the company, while around **84% of employees have remained in the organization.
+
+# Q2 Which department has the highest Attrition?
+
+dept_attrition = pd.crosstab(df['Department'], df['Attrition'])
+
+dept_attrition.plot(kind='bar', stacked=True,
+                    color=['#6FBF8F', '#2F4F7F'])
+
+plt.title("Attrition by Department")
+plt.xlabel("Department")
+plt.ylabel("Number of Employees")
+plt.show()
+
+The Sales department shows the highest employee attrition compared to other departments.
+
+# Q3 Does salary affect attrition?
+
+sns.barplot(x='Attrition', y='MonthlyIncome', hue='Attrition',
+            data=df, palette=['#6FBF8F','#2F4F7F'], legend=False)
+
+plt.title("Salary vs Attrition")
+plt.xlabel("Attrition")
+plt.ylabel("Average Monthly Income")
+plt.show()
+
+Employees who left the company tend to have lower average salaries compared to those who stayed.
+
+# Q4 Does overtime increase attrition?
+
+sns.countplot(x='OverTime', hue='Attrition', data=df,
+              palette=['#6FBF8F','#2F4F7F'])
+
+plt.title("Overtime vs Attrition")
+plt.xlabel("OverTime")
+plt.ylabel("Number of Employees")
+plt.show()
+
+Employees who work overtime tend to show higher attrition compared to employees who do not work overtime.
+
+# Q5 Which Age Group leaves the most?
+
+sns.countplot(x='AgeGroup', hue='Attrition', data=df,
+              palette=['#6FBF8F','#2F4F7F'])
+
+plt.title("Attrition by Age Group")
+plt.xlabel("Age Group")
+plt.ylabel("Number of Employees")
+plt.show()
+
+Employees in the **26–35 age group show higher attrition compared to other age groups.
+
+# Q6 Does distance from home influence attrition?
+
+sns.barplot(x='Attrition', y='DistanceFromHome', hue='Attrition',
+            data=df, palette=['#6FBF8F','#2F4F7F'], legend=False)
+
+plt.title("Distance from Home vs Attrition")
+plt.xlabel("Attrition")
+plt.ylabel("Average Distance from Home")
+plt.show()
+
+Employees who live farther from the workplace tend to show slightly higher attrition compared to those who live closer.
+
+# Q7 Do job satisfaction levels affect employee attrition?
+
+sns.countplot(x='JobSatisfaction', hue='Attrition', data=df,
+              palette=['#6FBF8F','#2F4F7F'])
+
+plt.title("Job Satisfaction vs Attrition")
+plt.xlabel("Job Satisfaction Level")
+plt.ylabel("Number of Employees")
+plt.show()
+
+Employees with lower job satisfaction levels tend to show higher attrition compared to employees with higher satisfaction.
+
+# Q8 Does work-life balance affect employee retention?
+
+sns.countplot(x='WorkLifeBalance', hue='Attrition', data=df,
+              palette=['#6FBF8F','#2F4F7F'])
+
+plt.title("Work Life Balance vs Attrition")
+plt.xlabel("Work Life Balance")
+plt.ylabel("Number of Employees")
+plt.show()
+
+Employees with poor work-life balance tend to have higher attrition compared to those with better work-life balance.
+
+# Q9 Can we predict which employees may leave?
+
+numeric_df = df.select_dtypes(include=['int64','float64'])
+
+plt.figure(figsize=(10,6))
+sns.heatmap(numeric_df.corr(), cmap='coolwarm', annot=False)
+
+plt.title("Correlation between Factors Affecting Attrition")
+plt.show()
+
+The correlation heatmap shows relationships between different numerical factors and employee attrition. Variables such as overtime, job satisfaction, salary, and work-life balance appear to influence employee turnover.
