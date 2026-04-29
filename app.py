@@ -459,7 +459,7 @@ elif page == "Work Conditions":
         fig = go.Figure(go.Bar(
             x=sal["Status"], y=sal["MonthlyIncome"].round(0),
             marker_color=[C_LEFT if s == "Left" else C_STAYED for s in sal["Status"]],
-            text=sal["MonthlyIncome"].round(0).map(lambda v: f"Rs.{int(v):,}"),
+            text=sal["MonthlyIncome"].round(0).map(lambda v: f"${int(v):,}"),
             textposition="outside",
             width=0.4
         ))
