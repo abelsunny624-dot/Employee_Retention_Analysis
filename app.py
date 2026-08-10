@@ -48,7 +48,7 @@ st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
 
-html, body, [class*="css"] {{
+html, body {{
     font-family: 'DM Sans', sans-serif;
     background-color: #FAF8F5;
     color: {C_TEXT};
@@ -57,7 +57,28 @@ html, body, [class*="css"] {{
     background-color: #F2EFE9;
     border-right: 1px solid #E0DAD2;
 }}
-[data-testid="stSidebar"] * {{ font-family: 'DM Sans', sans-serif !important; }}
+
+/* FIX: scope DM Sans to text-bearing elements only, so Streamlit's
+   Material Symbols icon font (used for the sidebar collapse arrow)
+   isn't overridden and rendered as raw text like "keyboard_double_arrow_left". */
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span:not([class*="material"]):not([data-testid="stIconMaterial"]),
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] div:not([data-testid="stIconMaterial"]),
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3,
+[data-testid="stSidebar"] a,
+[data-testid="stSidebar"] li {{
+    font-family: 'DM Sans', sans-serif !important;
+}}
+
+/* Explicitly restore the icon font so the collapse/expand arrow renders as a glyph */
+[data-testid="stSidebar"] [data-testid="stIconMaterial"],
+[data-testid="stSidebar"] .material-symbols-outlined,
+[data-testid="stSidebar"] span[class*="material-icons"] {{
+    font-family: 'Material Symbols Outlined' !important;
+}}
 
 [data-testid="metric-container"] {{
     background: #FFFFFF;
