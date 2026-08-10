@@ -48,7 +48,7 @@ st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
 
-html, body, [class*="css"] {{
+html, body {{
     font-family: 'DM Sans', sans-serif;
     background-color: #FAF8F5;
     color: {C_TEXT};
