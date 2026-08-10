@@ -212,8 +212,7 @@ with st.sidebar:
     travel  = st.multiselect("Business Travel",
                              sorted(df["BusinessTravel"].unique()),
                              default=list(df["BusinessTravel"].unique()))
-    st.markdown("---")
-    st.caption("IBM HR Analytics Dataset")
+    
 
 # ─────────────────────────────────────────────────────────────
 # FILTERED DATA
