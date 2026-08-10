@@ -58,26 +58,30 @@ html, body {{
     border-right: 1px solid #E0DAD2;
 }}
 
-/* FIX: scope DM Sans to text-bearing elements only, so Streamlit's
-   Material Symbols icon font (used for the sidebar collapse arrow)
-   isn't overridden and rendered as raw text like "keyboard_double_arrow_left". */
+/* FIX: no !important here. Streamlit sets the icon font on the collapse
+   arrow's span via its own class, which has higher specificity than this
+   plain descendant selector — so the icon renders correctly, while normal
+   text (which has no competing font-family rule) still picks up DM Sans. */
 [data-testid="stSidebar"] p,
-[data-testid="stSidebar"] span:not([class*="material"]):not([data-testid="stIconMaterial"]),
+[data-testid="stSidebar"] span,
 [data-testid="stSidebar"] label,
-[data-testid="stSidebar"] div:not([data-testid="stIconMaterial"]),
+[data-testid="stSidebar"] div,
 [data-testid="stSidebar"] h1,
 [data-testid="stSidebar"] h2,
 [data-testid="stSidebar"] h3,
 [data-testid="stSidebar"] a,
 [data-testid="stSidebar"] li {{
-    font-family: 'DM Sans', sans-serif !important;
+    font-family: 'DM Sans', sans-serif;
 }}
 
-/* Explicitly restore the icon font so the collapse/expand arrow renders as a glyph */
+/* Belt-and-braces: force the icon font back on, whatever class Streamlit
+   happens to use for it in your installed version. */
 [data-testid="stSidebar"] [data-testid="stIconMaterial"],
-[data-testid="stSidebar"] .material-symbols-outlined,
-[data-testid="stSidebar"] span[class*="material-icons"] {{
-    font-family: 'Material Symbols Outlined' !important;
+[data-testid="stSidebar"] [class*="material-symbols"],
+[data-testid="stSidebar"] [class*="material-icons"],
+[data-testid="stSidebarCollapseButton"] span,
+[data-testid="collapsedControl"] span {{
+    font-family: 'Material Symbols Rounded', 'Material Symbols Outlined', 'Material Icons' !important;
 }}
 
 [data-testid="metric-container"] {{
