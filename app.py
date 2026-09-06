@@ -261,85 +261,84 @@ if page == "Overview":
 
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    # Row 1: Donut  +  Department bar
-    col1, col2 = st.columns([1, 1.6])
+    # # Row 1: Retention Split (Single Column)
+section("Retention Split")
+fig = go.Figure(go.Pie(
+    labels=["Left", "Stayed"],
+    values=[n_left, n_stay],
+    hole=0.62,
+    marker=dict(colors=[C_LEFT, C_STAYED]),
+    textinfo="percent",
+    textfont=dict(size=13, family=BODY_FONT),
+    hovertemplate="%{label}: %{value:,} employees<extra></extra>"
+))
+fig.add_annotation(text=f"<b>{rate}%</b><br>Left",
+                   x=0.5, y=0.5, showarrow=False,
+                   font=dict(size=15, family=CHART_FONT, color=C_TEXT))
+lo = base_layout(height=290)
+lo["showlegend"] = True
+fig.update_layout(**lo)
+st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+ins(f"{rate}% of employees have left. Industry benchmark is typically 10-15%.")
 
-    with col1:
-        section("Retention Split")
-        fig = go.Figure(go.Pie(
-            labels=["Left", "Stayed"],
-            values=[n_left, n_stay],
-            hole=0.62,
-            marker=dict(colors=[C_LEFT, C_STAYED]),
-            textinfo="percent",
-            textfont=dict(size=13, family=BODY_FONT),
-            hovertemplate="%{label}: %{value:,} employees<extra></extra>"
-        ))
-        fig.add_annotation(text=f"<b>{rate}%</b><br>Left",
-                           x=0.5, y=0.5, showarrow=False,
-                           font=dict(size=15, family=CHART_FONT, color=C_TEXT))
-        lo = base_layout(height=290)
-        lo["showlegend"] = True
-        fig.update_layout(**lo)
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-        ins(f"{rate}% of employees have left. Industry benchmark is typically 10-15%.")
+st.markdown("<hr>", unsafe_allow_html=True)
 
-    with col2:
-        section("Attrition Rate by Department")
-        dept = (f.groupby("Department")["Attrition"]
-                .mean().mul(100).round(1).reset_index()
-                .rename(columns={"Attrition": "Rate"})
-                .sort_values("Rate", ascending=True))
-        fig = go.Figure(go.Bar(
-            x=dept["Rate"], y=dept["Department"], orientation="h",
-            marker=dict(color=[C_LEFT if v == dept["Rate"].max() else C_ACCENT for v in dept["Rate"]],
-                        line=dict(width=0)),
-            text=dept["Rate"].map(lambda v: f"{v}%"),
-            textposition="outside",
-            hovertemplate="%{y}: %{x}%<extra></extra>"
-        ))
-        lo = base_layout(height=290)
-        lo["xaxis"]["range"]   = [0, dept["Rate"].max() + 8]
-        lo["xaxis"]["showgrid"] = False
-        lo["yaxis"]["showgrid"] = False
-        lo["plot_bgcolor"]      = "rgba(0,0,0,0)"
-        fig.update_layout(**lo)
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-        top_dept = dept.iloc[-1]
-        ins(f"The {top_dept['Department']} department has the highest attrition at {top_dept['Rate']}%. Prioritise retention initiatives there.")
+# Row 2: Attrition Rate by Department (Single Column)
+section("Attrition Rate by Department")
+dept = (f.groupby("Department")["Attrition"]
+        .mean().mul(100).round(1).reset_index()
+        .rename(columns={"Attrition": "Rate"})
+        .sort_values("Rate", ascending=True))
+fig = go.Figure(go.Bar(
+    x=dept["Rate"], y=dept["Department"], orientation="h",
+    marker=dict(color=[C_LEFT if v == dept["Rate"].max() else C_ACCENT for v in dept["Rate"]],
+                line=dict(width=0)),
+    text=dept["Rate"].map(lambda v: f"{v}%"),
+    textposition="outside",
+    hovertemplate="%{y}: %{x}%<extra></extra>"
+))
+lo = base_layout(height=290)
+lo["xaxis"]["range"]   = [0, dept["Rate"].max() + 8]
+lo["xaxis"]["showgrid"] = False
+lo["yaxis"]["showgrid"] = False
+lo["plot_bgcolor"]      = "rgba(0,0,0,0)"
+fig.update_layout(**lo)
+st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+top_dept = dept.iloc[-1]
+ins(f"The {top_dept['Department']} department has the highest attrition at {top_dept['Rate']}%. Prioritise retention initiatives there.")
 
-    st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown("<hr>", unsafe_allow_html=True)
 
-    # Row 2: Summary table  +  Gender
-    col3, col4 = st.columns([1.6, 1])
+# Row 3: Department Summary (Single Column)
+section("Department Summary")
+snap = (f.groupby("Department")
+        .agg(Total=("Attrition","count"), Left=("Attrition","sum"))
+        .assign(**{"Retention Rate (%)": lambda d: ((d["Total"]-d["Left"])/d["Total"]*100).round(1),
+                   "Attrition Rate (%)": lambda d: (d["Left"]/d["Total"]*100).round(1)})
+        .reset_index()
+        .rename(columns={"Total": "Total Employees", "Left": "Employees Left"}))
+st.dataframe(snap, use_container_width=True, hide_index=True)
 
-    with col3:
-        section("Department Summary")
-        snap = (f.groupby("Department")
-                .agg(Total=("Attrition","count"), Left=("Attrition","sum"))
-                .assign(**{"Retention Rate (%)": lambda d: ((d["Total"]-d["Left"])/d["Total"]*100).round(1),
-                           "Attrition Rate (%)": lambda d: (d["Left"]/d["Total"]*100).round(1)})
-                .reset_index()
-                .rename(columns={"Total": "Total Employees", "Left": "Employees Left"}))
-        st.dataframe(snap, use_container_width=True, hide_index=True)
+st.markdown("<hr>", unsafe_allow_html=True)
 
-    with col4:
-        section("Attrition by Gender")
-        gen = attr_pct("Gender")
-        stayed_col = gen.get("Stayed", pd.Series([0]*len(gen)))
-        fig = go.Figure()
-        fig.add_trace(go.Bar(name="Left",   x=gen["Gender"], y=gen["Left"],
-                             marker_color=C_LEFT,   text=gen["Left"].map(lambda v: f"{v:.0f}%"),
-                             textposition="auto"))
-        fig.add_trace(go.Bar(name="Stayed", x=gen["Gender"], y=stayed_col,
-                             marker_color=C_STAYED, text=stayed_col.map(lambda v: f"{v:.0f}%"),
-                             textposition="auto"))
-        lo = base_layout(height=270)
-        lo["barmode"]        = "stack"
-        lo["yaxis"]["title"] = "% of Gender Group"
-        lo["plot_bgcolor"]   = C_GRID
-        fig.update_layout(**lo)
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+# Row 4: Attrition by Gender (Single Column)
+section("Attrition by Gender")
+gen = attr_pct("Gender")
+stayed_col = gen.get("Stayed", pd.Series([0]*len(gen)))
+fig = go.Figure()
+fig.add_trace(go.Bar(name="Left",   x=gen["Gender"], y=gen["Left"],
+                     marker_color=C_LEFT,   text=gen["Left"].map(lambda v: f"{v:.0f}%"),
+                     textposition="auto"))
+fig.add_trace(go.Bar(name="Stayed", x=gen["Gender"], y=stayed_col,
+                     marker_color=C_STAYED, text=stayed_col.map(lambda v: f"{v:.0f}%"),
+                     textposition="auto"))
+lo = base_layout(height=270)
+lo["barmode"]        = "stack"
+lo["yaxis"]["title"] = "% of Gender Group"
+lo["plot_bgcolor"]   = C_GRID
+fig.update_layout(**lo)
+st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
 
 
 # =====================================================================
