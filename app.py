@@ -169,4 +169,4 @@ elif page == "People & Roles":
 
     # Promotion Gap
     section("Avg Years Since Last Promotion")
-    promo = f.groupby("Status")["YearsSinceLastPromotion"].mean().round(1).
+    promo = f.groupby("Status")["YearsSinceLastPromotion"].mean().round(1)
