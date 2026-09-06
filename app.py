@@ -1,3 +1,38 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+
+# CONFIG, PALETTE, CSS, helper functions here...
+
+# DATA LOADING
+df = load()  # or handle file upload fallback
+
+# SIDEBAR
+with st.sidebar:
+    st.markdown("### HR Attrition Report")
+    st.markdown("---")
+    st.markdown("**Page**")
+    page = st.radio("", ["Overview", "People & Roles", "Work Conditions"],
+                    label_visibility="collapsed")
+    st.markdown("---")
+    st.markdown("**Filters**")
+    depts   = st.multiselect("Department", sorted(df["Department"].unique()),
+                             default=list(df["Department"].unique()))
+    genders = st.multiselect("Gender", sorted(df["Gender"].unique()),
+                             default=list(df["Gender"].unique()))
+    travel  = st.multiselect("Business Travel", sorted(df["BusinessTravel"].unique()),
+                             default=list(df["BusinessTravel"].unique()))
+
+# FILTERED DATA
+f = df[df["Department"].isin(depts) &
+       df["Gender"].isin(genders) &
+       df["BusinessTravel"].isin(travel)].copy()
+
+total  = len(f)
+n_left = int(f["Attrition"].sum())
+n_stay = total - n_left
+rate   = round(n_left / total * 100, 1) if total > 0 else 0
 # =====================================================================
 # PAGE 1 — OVERVIEW
 # =====================================================================
